@@ -1,20 +1,25 @@
 import asyncio
-import pynats
+import json
 import random
+from datetime import datetime
+from nats.aio.client import Client as NATS
 
-async def generate_sensor_data():
-    return {
-        "temperature": random.uniform(20, 30),
-        "humidity": random.uniform(30, 50),
-        "energy_usage": random.uniform(100, 500)
-    }
+async def simulate_sensor():
+    nc = NATS()
+    await nc.connect("nats://nats:4222")  # Important: service name from Docker Compose
 
-async def publish_data():
-    client = pynats.Connection()
-    await client.connect()
     while True:
-        data = await generate_sensor_data()
-        client.publish("sensor.data", str(data).encode())
+        data = {
+            "sensor_id": "sensor-101",
+            "temperature": round(random.uniform(20.0, 25.0), 2),
+            "humidity": round(random.uniform(40.0, 60.0), 2),
+            "energy_kwh": round(random.uniform(0.5, 2.0), 2),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+        await nc.publish("building.sensor.data", json.dumps(data).encode())
+        print("Published:", data)
         await asyncio.sleep(5)
 
-asyncio.run(publish_data())
+if __name__ == "__main__":
+    asyncio.run(simulate_sensor())

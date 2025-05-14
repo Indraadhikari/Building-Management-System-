@@ -1,5 +1,4 @@
-version: '3.8'
-
+version: "3.9"
 services:
   nats:
     image: nats:2.11
@@ -29,25 +28,14 @@ services:
       context: ./data_ingestion
     depends_on:
       - nats
-
+    restart: on-failure
+  
   processing:
     build:
       context: ./processing
     depends_on:
       - nats
       - influxdb
-
-  historian:
-    build:
-      context: ./historian
-    depends_on:
-      - influxdb
-
-  alerting:
-    build:
-      context: ./alerting
-    depends_on:
-      - nats
 
 volumes:
   influxdb2-data:

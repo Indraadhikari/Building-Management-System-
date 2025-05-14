@@ -1,11 +1,8 @@
-FROM python:3.8
+FROM python:3.11-slim
 
 WORKDIR /app
+COPY data_ingestion.py .
 
-COPY requirements.txt .
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
-
-COPY . .
+RUN pip install nats-py
 
 CMD ["python", "data_ingestion.py"]
