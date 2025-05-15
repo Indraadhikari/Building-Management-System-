@@ -1,7 +1,5 @@
 # Building-Management-System
 
-# Junior Backend Cloud Developer Technical Challenge
-
 ## OVERVIEW
 
 Design and implement a distributed, event-driven system for building automation data processing. Your solution should consist of multiple microservices that communicate through NATS messaging system and store time-series data in InfluxDB v2.
