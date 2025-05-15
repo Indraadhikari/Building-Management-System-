@@ -1,1 +1,4 @@
-influxdb-client == 1.48.0
+graphene
+aiohttp
+influxdb-client
+python-dotenv
