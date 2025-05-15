@@ -6,7 +6,7 @@ from nats.aio.client import Client as NATS
 
 async def simulate_sensor():
     nc = NATS()
-    await nc.connect("nats://nats:4222")  # Important: service name from Docker Compose
+    await nc.connect("nats://nats:4222")  #nats service name from Docker Compose
 
     while True:
         data = {

@@ -1,32 +1,44 @@
-import smtplib
+import asyncio, os, json, smtplib
 from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+from nats.aio.client import Client as NATS
 
-def send_alert(subject, body, from_email, to_email, smtp_server="smtp.gmail.com", smtp_port=587, username=None, password=None):
-    msg = MIMEMultipart()
-    msg['From'] = from_email
-    msg['To'] = to_email
-    msg['Subject'] = subject
+TEMP_THRESHOLD = float(os.getenv("ALERT_THRESHOLD_TEMP"))
+EMAIL_USER = os.getenv("EMAIL_USER")
+EMAIL_PASS = os.getenv("EMAIL_PASS")
+EMAIL_RECIPIENT = os.getenv("ALERT_RECIPIENT")
 
-    msg.attach(MIMEText(body, 'plain'))
-
+async def send_alert(sensor_id, temp):
+    msg = MIMEText(f"🚨 Temperature too high! Sensor {sensor_id} reported {temp}°C.")
+    msg['Subject'] = '🔥 High Temperature Alert'
+    msg['From'] = EMAIL_USER
+    msg['To'] = EMAIL_RECIPIENT
     try:
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
             server.starttls()
-            server.login(username, password)
-            server.sendmail(from_email, to_email, msg.as_string())
-            print(f"✅ Alert sent to {to_email}")
-    except smtplib.SMTPException as e:
-        print(f"❌ Error sending alert: {e}")
+            server.login(EMAIL_USER, EMAIL_PASS)
+            server.send_message(msg)
+            print(f"✅ Alert sent for {sensor_id}")
+    except Exception as e:
+        print(f"❌ Alert send failed: {e}")
 
-# Example usage
-send_alert(
-    subject="Temperature Alert",
-    body="Temperature exceeded threshold.",
-    from_email="indrabdradhikari39@gmail.com",
-    to_email="indraadhikari0@gmail.com",
-    smtp_server="smtp.gmail.com",
-    smtp_port=587,
-    username="indrabdradhikari39@gmail.com",
-    password="XXXXXXXXXXXXXXX"
-)
+async def main():
+    nc = NATS()
+    await nc.connect("nats://nats:4222")
+
+    async def handler(msg):
+        try:
+            data = json.loads(msg.data.decode())
+            sensor_id = data["sensor_id"]
+            temp = data["temperature"]
+            if temp > TEMP_THRESHOLD:
+                await send_alert(sensor_id, temp)
+        except Exception as e:
+            print(f"❌ Error in alerting: {e}")
+
+    await nc.subscribe("building.sensor.data", cb=handler)
+    print("🔄 Alerting service is running...")
+    while True:
+        await asyncio.sleep(1)
+
+if __name__ == "__main__":
+    asyncio.run(main())

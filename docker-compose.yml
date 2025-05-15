@@ -17,12 +17,12 @@ services:
       - influxdb2-config:/etc/influxdb2
     environment:
       - DOCKER_INFLUXDB_INIT_MODE=setup
-      - DOCKER_INFLUXDB_INIT_USERNAME=admin
-      - DOCKER_INFLUXDB_INIT_PASSWORD=7fb3232841bd35feb7a5
-      - DOCKER_INFLUXDB_INIT_ORG=acme_corp
-      - DOCKER_INFLUXDB_INIT_BUCKET=the_bucket
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUX_USERNAME}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUX_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUX_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUX_BUCKET}
     restart: always
-
+  
   data_ingestion:
     build:
       context: ./data_ingestion
@@ -36,6 +36,32 @@ services:
     depends_on:
       - nats
       - influxdb
+    environment:
+      - INFLUX_URL=${INFLUX_URL}
+      - INFLUX_TOKEN=${INFLUX_TOKEN}
+      - ORG=${ORG}
+      - BUCKET=${BUCKET}
+
+  alerting:
+    build: ./alerting
+    depends_on:
+      - nats
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
+    environment:
+      - ALERT_THRESHOLD_TEMP=${ALERT_THRESHOLD_TEMP}
+      - EMAIL_USER=${EMAIL_USER}
+      - ALERT_RECIPIENT=${ALERT_RECIPIENT}
+      - EMAIL_PASS=${EMAIL_PASS}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8222"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 volumes:
   influxdb2-data:

@@ -1,4 +1,4 @@
-import asyncio
+import asyncio, os
 import json
 from datetime import datetime
 from nats.aio.client import Client as NATS
@@ -6,10 +6,10 @@ from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 # InfluxDB settings
-INFLUX_URL = "http://influxdb:8086"
-INFLUX_TOKEN = "a0oTNV00q2Ga77A3ZUtDf2KZ10uez5lthCsBz_CPeffCh29uySq5u1tKhrbdvPHQH-67iFPt5Bg4WlU227YK6A=="
-ORG = "acme_corp"
-BUCKET = "the_bucket"
+INFLUX_URL = os.getenv("INFLUX_URL")
+INFLUX_TOKEN = os.getenv("INFLUX_TOKEN")
+ORG = os.getenv("ORG")
+BUCKET = os.getenv("BUCKET")
 
 async def main():
     # Connect to NATS
