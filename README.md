@@ -37,3 +37,5 @@ We have provided a scaffold docker-compose.yml file that includes pre-configured
 - Your services should be containerized and added to the provided docker-compose.yml
 - Include proper environment configuration and documentation
 
+##  System Architecture
+![Alt text](image.png)
