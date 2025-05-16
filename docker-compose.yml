@@ -22,30 +22,30 @@ services:
       - DOCKER_INFLUXDB_INIT_ORG=${INFLUX_ORG}
       - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUX_BUCKET}
     restart: always
-  
+
   data_ingestion:
     build:
       context: ./data_ingestion
     depends_on:
       - nats
-    restart: on-failure
-  
+    restart: always
+
   processing:
     build:
       context: ./processing
     depends_on:
-      - nats
-      - influxdb
+    - nats
+    - influxdb
     environment:
-      - INFLUX_URL=${INFLUX_URL}
-      - INFLUX_TOKEN=${INFLUX_TOKEN}
-      - ORG=${ORG}
-      - BUCKET=${BUCKET}
+    - INFLUX_URL=${INFLUX_URL}
+    - INFLUX_TOKEN=${INFLUX_TOKEN}
+    - ORG=${ORG}
+    - BUCKET=${BUCKET}
 
   alerting:
     build: ./alerting
     depends_on:
-      - nats
+    - nats
     restart: always
     deploy:
       resources:
@@ -53,10 +53,10 @@ services:
           cpus: '0.1'
           memory: 128M
     environment:
-      - ALERT_THRESHOLD_TEMP=${ALERT_THRESHOLD_TEMP}
-      - EMAIL_USER=${EMAIL_USER}
-      - ALERT_RECIPIENT=${ALERT_RECIPIENT}
-      - EMAIL_PASS=${EMAIL_PASS}
+    - ALERT_THRESHOLD_TEMP=${ALERT_THRESHOLD_TEMP}
+    - EMAIL_USER=${EMAIL_USER}
+    - ALERT_RECIPIENT=${ALERT_RECIPIENT}
+    - EMAIL_PASS=${EMAIL_PASS}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8222"]
       interval: 30s
@@ -69,12 +69,13 @@ services:
     ports:
       - "8088:8088"
     environment:
-      - INFLUX_URL=${INFLUX_URL}
-      - INFLUX_TOKEN=${INFLUX_TOKEN}
-      - ORG=${ORG}
-      - BUCKET=${BUCKET}
+    - INFLUX_URL=${INFLUX_URL}
+    - INFLUX_TOKEN=${INFLUX_TOKEN}
+    - ORG=${ORG}
+    - BUCKET=${BUCKET}
     depends_on:
       - influxdb
+    restart: always
 
 volumes:
   influxdb2-data:

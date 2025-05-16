@@ -8,8 +8,8 @@ EMAIL_PASS = os.getenv("EMAIL_PASS")
 EMAIL_RECIPIENT = os.getenv("ALERT_RECIPIENT")
 
 async def send_alert(sensor_id, temp):
-    msg = MIMEText(f"🚨 Temperature too high! Sensor {sensor_id} reported {temp}°C.")
-    msg['Subject'] = '🔥 High Temperature Alert'
+    msg = MIMEText(f" Temperature too high! Sensor {sensor_id} reported {temp}°C. \n This is the test arlerting notification from the developement environment by Indra for Piscada.")
+    msg['Subject'] = '🔥 High Temperature Alert - Piscada (Indra)'
     msg['From'] = EMAIL_USER
     msg['To'] = EMAIL_RECIPIENT
     try:
@@ -17,9 +17,9 @@ async def send_alert(sensor_id, temp):
             server.starttls()
             server.login(EMAIL_USER, EMAIL_PASS)
             server.send_message(msg)
-            print(f"✅ Alert sent for {sensor_id}")
+            print(f"Alert sent for {sensor_id}")
     except Exception as e:
-        print(f"❌ Alert send failed: {e}")
+        print(f"Alert send failed: {e}")
 
 async def main():
     nc = NATS()
@@ -33,10 +33,10 @@ async def main():
             if temp > TEMP_THRESHOLD:
                 await send_alert(sensor_id, temp)
         except Exception as e:
-            print(f"❌ Error in alerting: {e}")
+            print(f"Error in alerting: {e}")
 
-    await nc.subscribe("building.sensor.data", cb=handler)
-    print("🔄 Alerting service is running...")
+    await nc.subscribe("building.sensor.data", cb=handler) # subscribe subject building.sensor.data
+    print("Alerting service is running...")
     while True:
         await asyncio.sleep(1)
 
